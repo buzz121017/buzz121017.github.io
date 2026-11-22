@@ -1,0 +1,527 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=5, viewport-fit=cover">
+<meta name="theme-color" content="#0E1114">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="성분궁합">
+<meta name="description" content="여드름·트러블 스킨케어 성분 궁합 체커. 고른 성분의 충돌·주의·시너지를 판정하고 아침/저녁 루틴까지 자동으로 짜 줍니다.">
+<title>성분 궁합 체커 · TROUBLE LAB</title>
+<style>
+  :root{
+    --bg:#0E1114; --card:#161B20; --card2:#1A2027; --line:#26313A;
+    --txt:#E9EFF3; --dim:#8A99A6; --mint:#3EE6B0; --red:#FF6B6B; --amber:#FFB84D;
+    --mint-soft:rgba(62,230,176,.10); --red-soft:rgba(255,107,107,.10); --amber-soft:rgba(255,184,77,.10);
+  }
+  *{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+  html,body{margin:0;padding:0;background:var(--bg);color:var(--txt);}
+  body{
+    font-family:-apple-system,BlinkMacSystemFont,"Apple SD Gothic Neo","Pretendard","Malgun Gothic","Noto Sans KR",sans-serif;
+    font-size:15px;line-height:1.5;-webkit-text-size-adjust:100%;overflow-x:hidden;
+  }
+  .wrap{max-width:430px;margin:0 auto;padding:0 16px 56px;overflow-wrap:anywhere;word-break:keep-all;}
+  header.top{padding:22px 0 4px}
+  .brand{display:flex;align-items:center;gap:8px;font-size:11px;letter-spacing:.18em;color:var(--mint);font-weight:700}
+  .brand i{display:block;width:16px;height:2px;background:var(--mint);border-radius:2px}
+  h1{font-size:24px;line-height:1.28;margin:8px 0 6px;letter-spacing:-.01em}
+  h1 em{font-style:normal;color:var(--mint)}
+  .lede{margin:0 0 16px;color:var(--dim);font-size:13px}
+  .card{background:var(--card);border:1px solid var(--line);border-radius:18px;padding:16px;margin:0 0 12px}
+  .card h2{font-size:14px;margin:0 0 2px;letter-spacing:-.01em}
+  .card .cap{font-size:11.5px;color:var(--dim);margin:0 0 12px}
+  .step-no{display:inline-flex;align-items:center;justify-content:center;width:18px;height:18px;border-radius:6px;
+    background:var(--mint-soft);color:var(--mint);font-size:11px;font-weight:700;margin-right:7px;vertical-align:1px}
+  /* ingredient grid */
+  .grid{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+  .chip{
+    appearance:none;border:1px solid var(--line);background:#12181D;color:var(--txt);
+    border-radius:14px;padding:10px 11px;text-align:left;font:inherit;cursor:pointer;
+    display:flex;flex-direction:column;gap:2px;min-height:58px;justify-content:center;
+    transition:border-color .15s,background .15s,transform .08s;
+  }
+  .chip:active{transform:scale(.985)}
+  .chip .nm{font-size:13.5px;font-weight:700;letter-spacing:-.01em;display:flex;align-items:center;gap:5px}
+  .chip .sb{font-size:11px;color:var(--dim);line-height:1.35}
+  .chip[aria-pressed="true"]{border-color:var(--mint);background:var(--mint-soft)}
+  .chip[aria-pressed="true"] .nm{color:var(--mint)}
+  .chip[aria-pressed="true"] .nm::before{content:"";width:6px;height:6px;border-radius:50%;background:var(--mint);flex:none}
+  .pickbar{display:flex;align-items:center;justify-content:space-between;gap:8px;margin:12px 0 0}
+  .count{font-size:12px;color:var(--dim)}
+  .count b{color:var(--mint);font-size:14px}
+  .reset{appearance:none;border:1px solid var(--line);background:transparent;color:var(--dim);
+    border-radius:10px;padding:7px 11px;font:inherit;font-size:12px;cursor:pointer}
+  /* verdict */
+  .overall{display:flex;align-items:center;gap:10px;padding:12px 13px;border-radius:14px;margin:0 0 12px;
+    border:1px solid var(--line);background:var(--card2);font-size:14px;font-weight:700;line-height:1.35}
+  .overall .em{font-size:19px;line-height:1;flex:none}
+  .overall.red{border-color:rgba(255,107,107,.45);background:var(--red-soft);color:#FFD3D3}
+  .overall.amber{border-color:rgba(255,184,77,.45);background:var(--amber-soft);color:#FFE3B8}
+  .overall.green{border-color:rgba(62,230,176,.45);background:var(--mint-soft);color:#C6F7E6}
+  .overall.ok{border-color:var(--line);color:var(--txt)}
+  .overall small{display:block;font-weight:500;font-size:11.5px;color:var(--dim);margin-top:2px}
+  .pair{display:flex;gap:9px;padding:10px 0;border-top:1px solid var(--line);font-size:13px}
+  .pair:first-of-type{border-top:0;padding-top:2px}
+  .dot{width:8px;height:8px;border-radius:50%;flex:none;margin-top:6px}
+  .dot.red{background:var(--red)} .dot.amber{background:var(--amber)}
+  .dot.green{background:var(--mint)} .dot.ok{background:#4A5A67}
+  .pair .body{min-width:0}
+  .pair .nm{font-weight:700;font-size:13px;display:block}
+  .pair .nm span{font-weight:600;font-size:10.5px;padding:1px 6px;border-radius:6px;margin-left:1px;vertical-align:1px;white-space:nowrap}
+  .pair.red .nm span{background:var(--red-soft);color:var(--red)}
+  .pair.amber .nm span{background:var(--amber-soft);color:var(--amber)}
+  .pair.green .nm span{background:var(--mint-soft);color:var(--mint)}
+  .pair.ok .nm span{background:#1F272E;color:var(--dim)}
+  .pair p{margin:3px 0 0;color:#B6C3CD;font-size:12px;line-height:1.5}
+  .more{margin:10px 0 0;font-size:11.5px;color:var(--dim)}
+  .empty{color:var(--dim);font-size:13px;line-height:1.6;padding:6px 0 2px}
+  .legend{display:flex;flex-wrap:wrap;gap:6px 12px;margin-top:12px;padding-top:10px;border-top:1px solid var(--line);font-size:11px;color:var(--dim)}
+  .legend b{font-weight:600}
+  /* routine */
+  .dayblock{margin:0 0 10px}
+  .dayhead{display:flex;align-items:center;gap:7px;font-size:12px;font-weight:700;color:var(--mint);margin:0 0 7px;letter-spacing:.02em}
+  .dayhead .tag{font-size:10.5px;color:var(--dim);font-weight:600;border:1px solid var(--line);border-radius:7px;padding:1px 6px}
+  .dayhead.pm{color:#9AD7FF}
+  .dayhead.b{color:var(--amber)}
+  ol.steps{list-style:none;margin:0;padding:0;counter-reset:s}
+  ol.steps li{position:relative;padding:7px 0 7px 27px;font-size:13px;border-top:1px dashed rgba(255,255,255,.06)}
+  ol.steps li:first-child{border-top:0}
+  ol.steps li::before{counter-increment:s;content:counter(s);position:absolute;left:0;top:9px;
+    width:18px;height:18px;border-radius:50%;background:#1F272E;color:var(--dim);font-size:10.5px;
+    display:flex;align-items:center;justify-content:center;font-weight:700}
+  ol.steps li b{font-weight:700}
+  ol.steps li small{display:block;color:var(--dim);font-size:11.5px;line-height:1.45;margin-top:1px}
+  .notelist{margin:10px 0 0;padding:10px 12px;background:#12181D;border:1px solid var(--line);border-radius:12px}
+  .notelist p{margin:0 0 6px;font-size:11.5px;color:#B6C3CD;line-height:1.5;padding-left:14px;position:relative}
+  .notelist p:last-child{margin-bottom:0}
+  .notelist p::before{content:"·";position:absolute;left:4px;color:var(--mint);font-weight:700}
+  .copybtn{appearance:none;width:100%;margin-top:14px;border:0;border-radius:14px;padding:14px;
+    background:var(--mint);color:#08211A;font:inherit;font-weight:800;font-size:14.5px;cursor:pointer;letter-spacing:-.01em}
+  .copybtn:active{opacity:.85}
+  footer{padding:18px 0 0;margin-top:6px;border-top:1px solid var(--line);color:var(--dim);font-size:11px;line-height:1.7}
+  footer .credit{color:#C6D2DB;font-weight:700;font-size:12px;margin-bottom:4px}
+  footer a{color:var(--mint);text-decoration:none}
+  .disc{margin:8px 0 0;padding:10px 12px;border-radius:12px;background:#12181D;border:1px solid var(--line);color:#8A99A6}
+  #toast{position:fixed;left:50%;bottom:26px;transform:translate(-50%,14px);background:#0B1512;color:var(--mint);
+    border:1px solid rgba(62,230,176,.5);padding:11px 18px;border-radius:12px;font-size:13px;font-weight:700;
+    opacity:0;pointer-events:none;transition:opacity .2s,transform .2s;z-index:99;max-width:calc(100% - 32px);text-align:center}
+  #toast.on{opacity:1;transform:translate(-50%,0)}
+  @media (prefers-reduced-motion:reduce){*{transition:none !important}}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header class="top">
+    <div class="brand"><i></i>TROUBLE LAB</div>
+    <h1>내 스킨케어, <em>같이 써도 될까?</em></h1>
+    <p class="lede">쓰고 있는 성분을 골라 주세요. 충돌하는 조합을 짚어 주고, 아침·저녁 루틴까지 자동으로 짜 드립니다.</p>
+  </header>
+
+  <section class="card">
+    <h2><span class="step-no">1</span>성분 고르기</h2>
+    <p class="cap">2개 이상 고르면 바로 판정돼요. (제품에 적힌 성분명 기준)</p>
+    <div class="grid" id="grid"></div>
+    <div class="pickbar">
+      <span class="count" id="count"><b>0</b>개 선택</span>
+      <button class="reset" id="reset" type="button">선택 초기화</button>
+    </div>
+  </section>
+
+  <section class="card" id="verdictCard">
+    <h2><span class="step-no">2</span>궁합 판정</h2>
+    <p class="cap">겹치는 성분이 많을수록 자극 위험도 커져요.</p>
+    <div id="verdict">
+      <p class="empty">아직 고른 성분이 없어요. 위에서 2개 이상 선택하면 궁합을 판정해 드릴게요.</p>
+    </div>
+    <div class="legend">
+      <span><b style="color:var(--red)">●</b> 충돌 주의</span>
+      <span><b style="color:var(--amber)">●</b> 조건부 가능</span>
+      <span><b style="color:var(--mint)">●</b> 시너지 추천</span>
+      <span><b style="color:#4A5A67">●</b> 무난</span>
+    </div>
+  </section>
+
+  <section class="card" id="routineCard">
+    <h2><span class="step-no">3</span>추천 루틴</h2>
+    <p class="cap">선택한 성분만으로 짜 본 순서예요. 액티브는 한 번에 하나씩.</p>
+    <div id="routine">
+      <p class="empty">성분을 고르면 아침(AM)·저녁(PM) 루틴이 여기에 나타납니다.</p>
+    </div>
+    <button class="copybtn" id="copy" type="button" disabled>한 줄 요약 복사하기</button>
+  </section>
+
+  <footer>
+    <div class="credit">@trouble_exit · buzz2026.tistory.com</div>
+    <div>여드름·트러블 피부를 위한 성분 조합 가이드</div>
+    <p class="disc">개인 피부 민감도에 따라 다를 수 있으며, 고함량 제품은 격일 테스트를 권장합니다. 이 앱은 정보 제공용으로, 의약품 복용이나 피부 질환 치료를 대신하지 않습니다. 증상이 심하면 피부과 진료를 받으세요.</p>
+  </footer>
+</div>
+<div id="toast" role="status" aria-live="polite"></div>
+
+<script>
+(function(){
+  "use strict";
+
+  var ING = [
+    {id:"retinol",  n:"레티놀",          s:"레티노이드",              am:false, pm:true,  ord:50,
+     how:"완전히 마른 얼굴에 완두콩만큼, 눈가·입가·목은 피해서"},
+    {id:"aha",      n:"AHA",            s:"글리콜산·락틱산",          am:false, pm:true,  ord:21,
+     how:"바른 뒤 5분 두었다가 보습, 주 2~3회부터"},
+    {id:"bha",      n:"BHA",            s:"살리실산",                am:false, pm:true,  ord:22,
+     how:"좁쌀·모공 부위만 얇게, 장벽 보며 횟수 조절"},
+    {id:"pha",      n:"PHA",            s:"글루코노락톤",            am:false, pm:true,  ord:20,
+     how:"순한 각질 케어 — 매일도 가능하지만 액티브와 겹치면 주 3회"},
+    {id:"vitc",     n:"비타민C",         s:"순수 L-아스코빅애시드",    am:true,  pm:false, ord:10,
+     how:"세안 후 첫 단계, 마르면 바로 보습으로 덮기"},
+    {id:"niacinamide",n:"나이아신아마이드", s:"피지·톤 케어",           am:true,  pm:true,  ord:40,
+     how:"2~5%가 무난, 10% 이상은 따가울 수 있어요"},
+    {id:"bpo",      n:"벤조일퍼옥사이드",  s:"BPO · 여드름 살균",        am:false, pm:true,  ord:55,
+     how:"여드름 부위에만 소량, 베갯잇·수건 탈색 주의"},
+    {id:"azelaic",  n:"아젤라익애시드",    s:"붉은기·색소",             am:true,  pm:true,  ord:30,
+     how:"초반 5분 따가움은 흔해요 — 소량부터"},
+    {id:"panthenol",n:"판테놀",          s:"B5 · 진정·보습",           am:true,  pm:true,  ord:65,
+     how:"따가운 부위에 먼저 바르고 흡수 후 다음 단계"},
+    {id:"cica",     n:"시카",            s:"마데카소사이드·병풀",       am:true,  pm:true,  ord:66,
+     how:"붉어진 부위에 얇게 여러 번 덧발라도 OK"},
+    {id:"ceramide", n:"세라마이드",       s:"장벽 크림",               am:true,  pm:true,  ord:80,
+     how:"마지막 단계에서 수분 잠그기"},
+    {id:"ha",       n:"히알루론산",       s:"속수분",                  am:true,  pm:true,  ord:60,
+     how:"물기 살짝 남았을 때 흡수, 위에 꼭 크림"},
+    {id:"tranexamic",n:"트라넥사믹애시드",  s:"붉은자국·잡티",           am:true,  pm:true,  ord:35,
+     how:"아침저녁 모두 가능, 자외선차단과 함께"},
+    {id:"peptide",  n:"펩타이드",         s:"탄력·재생",               am:true,  pm:true,  ord:70,
+     how:"저pH 액티브와는 10분 간격을 두고"}
+  ];
+
+  var MAP = {};
+  ING.forEach(function(x){ MAP[x.id] = x; });
+  var SOOTHE = ["panthenol","cica","ceramide","ha"];
+
+  /* ---------- pair rules ---------- */
+  var R = {
+    "aha|retinol": {lvl:"red", why:"각질 제거와 세포 턴오버가 겹쳐 장벽이 얇아지고 따가움·홍조가 생깁니다."},
+    "bha|retinol": {lvl:"red", why:"레티놀에 각질 제거까지 겹치면 건조·각질·붉은기가 한꺼번에 옵니다."},
+    "bpo|retinol": {lvl:"red", why:"벤조일퍼옥사이드가 레티놀을 산화시켜 효능이 떨어지고 자극만 남습니다."},
+    "retinol|vitc":{lvl:"red", why:"순수 비타민C의 낮은 pH가 레티놀을 불안정하게 만듭니다. 아침 C·저녁 레티놀로 나누거나 격일로."},
+    "bpo|vitc":    {lvl:"red", why:"벤조일퍼옥사이드가 비타민C를 산화시켜 둘 다 힘을 잃습니다. 같은 시간대 사용 금지."},
+    "aha|bha":     {lvl:"red", why:"고함량 동시 사용은 자극이 두 배 — 저농도라면 주 2~3회 번갈아 쓰세요."},
+    "bha|vitc":    {lvl:"amber", why:"둘 다 낮은 pH라 같은 날 겹치면 따갑습니다. 아침 C·저녁 BHA로 분리."},
+    "aha|vitc":    {lvl:"amber", why:"산 위에 산 — 따가움과 홍조가 쉽게 옵니다. 아침 C·저녁 AHA로 분리."},
+    "pha|vitc":    {lvl:"amber", why:"PHA는 순하지만 pH가 낮아 겹치면 자극이 쌓입니다. 시간을 나눠 주세요."},
+    "pha|retinol": {lvl:"amber", why:"PHA는 순한 편이나 같은 날 겹치면 건조해집니다. 주 2~3회부터."},
+    "aha|pha":     {lvl:"amber", why:"각질 제거가 중복됩니다. 하나만 쓰거나 격일로."},
+    "bpo|aha":     {lvl:"amber", why:"자극이 겹칩니다. BPO는 여드름 부위만, AHA는 다른 날로."},
+    "bha|bpo":     {lvl:"amber", why:"여드름 액티브 두 개 — 건조하면 각질이 일어납니다. 격일 또는 부위 분리."},
+    "niacinamide|vitc":{lvl:"amber", why:"저농도(5% 이하)는 미백 시너지지만, 고농도끼리 겹치면 홍조·따가움이 옵니다. 10분 간격 또는 아침·저녁 분리."},
+    "azelaic|retinol":{lvl:"amber", why:"붉은기엔 좋은 조합이지만 초보자는 따가움이 큽니다. 2~4주는 격일로."},
+    "peptide|aha": {lvl:"amber", why:"낮은 pH에서 펩타이드가 분해될 수 있어요. 10분 이상 간격을 두세요."},
+    "peptide|bha": {lvl:"amber", why:"산성 제형과 펩타이드는 흡수 타이밍이 다릅니다. 시간을 나눠 주세요."},
+    "peptide|vitc":{lvl:"amber", why:"저pH 비타민C와 펩타이드는 10분 이상 간격이 좋아요."},
+
+    "niacinamide|retinol":{lvl:"green", why:"나이아신아마이드가 레티놀 자극을 눅여 줍니다. 고농도만 피하면 찰떡."},
+    "bha|niacinamide":{lvl:"green", why:"피지·모공 정리에 서로 힘을 보탭니다."},
+    "aha|niacinamide":{lvl:"green", why:"각질 정리 후 톤·피지 케어로 이어지는 조합."},
+    "niacinamide|pha":{lvl:"green", why:"순한 각질 정리와 피지 밸런스 — 매일 루틴에 무리 없어요."},
+    "azelaic|niacinamide":{lvl:"green", why:"붉은기와 색소 침착을 양쪽에서 눌러 줍니다."},
+    "niacinamide|tranexamic":{lvl:"green", why:"붉은자국·잡티 케어의 대표 조합."},
+    "azelaic|tranexamic":{lvl:"green", why:"색소·붉은기를 함께 다루는 조합."},
+    "azelaic|bha":{lvl:"green", why:"모공과 붉은기를 동시에 — 따가우면 격일로 조절."},
+    "aha|tranexamic":{lvl:"green", why:"각질 정리 후 잡티 케어로 이어집니다."},
+    "vitc|tranexamic":{lvl:"green", why:"미백·붉은자국 케어 시너지. 자외선차단은 필수."},
+    "azelaic|bpo":{lvl:"green", why:"여드름 염증과 색소를 함께 다룹니다. 건조하면 진정 크림을 꼭."},
+    "vitc|azelaic":{lvl:"green", why:"항산화와 붉은기 케어를 함께."},
+    "ceramide|niacinamide":{lvl:"green", why:"장벽과 피지 밸런스를 같이 잡는 기본 조합."}
+  };
+
+  function keyOf(a,b){ return a < b ? a+"|"+b : b+"|"+a; }
+
+  function pair(a,b){
+    var k = keyOf(a,b);
+    if(R[k]) return {a:a,b:b,lvl:R[k].lvl,why:R[k].why};
+    var as = SOOTHE.indexOf(a) > -1, bs = SOOTHE.indexOf(b) > -1;
+    if(as && bs) return {a:a,b:b,lvl:"green",why:"진정·보습끼리는 겹쳐도 부담이 없습니다."};
+    if(as || bs) return {a:a,b:b,lvl:"green",why:"진정·보습 성분이 액티브 자극을 완충해 줍니다."};
+    return {a:a,b:b,lvl:"ok",why:"특별한 상극은 없습니다. 하나씩 며칠 써 보고 추가하세요."};
+  }
+
+  var RANK = {red:3, amber:2, green:1, ok:0};
+  var LABEL = {red:"충돌 주의", amber:"조건부 가능", green:"시너지 추천", ok:"무난"};
+  var EMOJI = {red:"❌", amber:"⚠️", green:"✅", ok:"✅"};
+
+  /* ---------- state ---------- */
+  var sel = [];
+  var gridEl = document.getElementById("grid");
+  var countEl = document.getElementById("count");
+  var verdictEl = document.getElementById("verdict");
+  var routineEl = document.getElementById("routine");
+  var copyBtn = document.getElementById("copy");
+
+  ING.forEach(function(x){
+    var b = document.createElement("button");
+    b.type = "button";
+    b.className = "chip";
+    b.setAttribute("aria-pressed", "false");
+    b.setAttribute("data-id", x.id);
+    b.innerHTML = '<span class="nm">'+x.n+'</span><span class="sb">'+x.s+'</span>';
+    b.addEventListener("click", function(){
+      var on = sel.indexOf(x.id) > -1;
+      if(on){ sel = sel.filter(function(v){ return v !== x.id; }); }
+      else { sel.push(x.id); }
+      b.setAttribute("aria-pressed", on ? "false" : "true");
+      render();
+    });
+    gridEl.appendChild(b);
+  });
+
+  document.getElementById("reset").addEventListener("click", function(){
+    sel = [];
+    Array.prototype.forEach.call(gridEl.children, function(c){ c.setAttribute("aria-pressed","false"); });
+    render();
+  });
+
+  function sortedSel(){
+    return sel.slice().sort(function(a,b){ return MAP[a].ord - MAP[b].ord; });
+  }
+
+  function render(){
+    countEl.innerHTML = "<b>" + sel.length + "</b>개 선택";
+    if(sel.length < 2){
+      verdictEl.innerHTML = '<p class="empty">' + (sel.length === 0
+        ? "아직 고른 성분이 없어요. 위에서 2개 이상 선택하면 궁합을 판정해 드릴게요."
+        : "한 개 더 고르면 궁합을 볼 수 있어요.") + "</p>";
+      routineEl.innerHTML = '<p class="empty">' + (sel.length === 0
+        ? "성분을 고르면 아침(AM)·저녁(PM) 루틴이 여기에 나타납니다."
+        : "한 개 더 고르면 함께 쓰는 순서까지 짜 드려요.") + "</p>";
+      copyBtn.disabled = true;
+      return;
+    }
+    copyBtn.disabled = false;
+    renderVerdict();
+    renderRoutine();
+  }
+
+  function renderVerdict(){
+    var s = sortedSel(), pairs = [], worst = "ok";
+    for(var i=0;i<s.length;i++){
+      for(var j=i+1;j<s.length;j++){
+        var p = pair(s[i], s[j]);
+        pairs.push(p);
+        if(RANK[p.lvl] > RANK[worst]) worst = p.lvl;
+      }
+    }
+    pairs.sort(function(a,b){ return RANK[b.lvl] - RANK[a.lvl]; });
+    var cnt = {red:0, amber:0, green:0, ok:0};
+    pairs.forEach(function(p){ cnt[p.lvl]++; });
+
+    var headline = {
+      red:"같이 쓰면 안 되는 조합이 있어요",
+      amber:"시간을 나눠야 하는 조합이 있어요",
+      green:"함께 쓰면 좋은 조합이에요",
+      ok:"무난하게 같이 쓸 수 있어요"
+    }[worst];
+
+    var sub = "충돌 " + cnt.red + " · 조건부 " + cnt.amber + " · 시너지 " + cnt.green;
+    var html = '<div class="overall ' + worst + '"><span class="em">' + EMOJI[worst] + '</span><span>'
+      + headline + '<small>' + sub + '</small></span></div>';
+
+    var shown = pairs.filter(function(p){ return p.lvl !== "ok"; });
+    var okCount = pairs.length - shown.length;
+    var greenSeen = 0, greenTotal = 0;
+    shown.forEach(function(p){ if(p.lvl === "green") greenTotal++; });
+    var capped = shown.filter(function(p){
+      if(p.lvl !== "green") return true;
+      greenSeen++;
+      return greenSeen <= 6;
+    });
+    if(!capped.length && okCount) capped = pairs.slice(0, 3);
+    html += capped.map(function(p){
+      return '<div class="pair ' + p.lvl + '"><span class="dot ' + p.lvl + '"></span><div class="body">'
+        + '<span class="nm">' + MAP[p.a].n + " + " + MAP[p.b].n + '<span>&nbsp;' + LABEL[p.lvl] + '</span></span>'
+        + '<p>' + p.why + '</p></div></div>';
+    }).join("");
+    var moreText = [];
+    if(greenTotal > 6) moreText.push("시너지 " + (greenTotal - 6) + "쌍 더");
+    if(okCount) moreText.push("무난한 조합 " + okCount + "쌍");
+    if(moreText.length) html += '<p class="more">그 밖에 ' + moreText.join(" · ") + ' 있어요.</p>';
+
+    verdictEl.innerHTML = html;
+  }
+
+  function pmSort(ids){
+    return ids.filter(function(id){ return MAP[id].pm; })
+      .sort(function(a,b){ return MAP[a].ord - MAP[b].ord; });
+  }
+  function amSort(ids){
+    return ids.filter(function(id){ return MAP[id].am; })
+      .sort(function(a,b){ return MAP[a].ord - MAP[b].ord; });
+  }
+  function toSteps(ids){
+    var out = [], hasA = ids.indexOf("aha") > -1, hasB = ids.indexOf("bha") > -1;
+    ids.forEach(function(id){
+      if(hasA && hasB && id === "bha") return;
+      if(hasA && hasB && id === "aha"){
+        out.push({n:"AHA 또는 BHA", how:"같은 날은 한 가지만 — 주 2~3회 번갈아, 바른 뒤 5분 후 보습"});
+        return;
+      }
+      out.push({n:MAP[id].n, how:MAP[id].how});
+    });
+    return out;
+  }
+  function namesOf(ids){
+    return toSteps(ids).map(function(x){ return x.n; }).join(" → ");
+  }
+  function steps(ids, lastText){
+    if(!ids.length) return "";
+    var items = toSteps(ids);
+    var out = items.map(function(x){
+      return "<li><b>" + x.n + "</b><small>" + x.how + "</small></li>";
+    }).join("");
+    if(lastText) out += "<li><b>자외선차단제</b><small>" + lastText + "</small></li>";
+    return '<ol class="steps">' + out + "</ol>";
+  }
+
+  function buildPlan(){
+    var s = sel.slice();
+    var retOn = s.indexOf("retinol") > -1;
+    var exf = ["aha","bha","bpo"].filter(function(id){ return s.indexOf(id) > -1; });
+    var cycle = retOn && exf.length > 0;
+    var rest = s.filter(function(id){ return id !== "retinol" && exf.indexOf(id) === -1; });
+
+    var amIds = amSort(s);
+    var plan = {cycle:cycle, amIds:amIds, pmIds:[], dayA:[], dayB:[], notes:[]};
+
+    if(cycle){
+      plan.dayA = pmSort(exf.concat(rest));
+      plan.dayB = pmSort(["retinol"].concat(rest));
+      plan.notes.push("레티놀과 AHA·BHA·BPO는 같은 날 쓰지 않고 격일로 나눕니다. (A일 = 각질·트러블 날, B일 = 레티놀 날)");
+    } else {
+      plan.pmIds = pmSort(s);
+    }
+
+    if(exf.indexOf("aha") > -1 && exf.indexOf("bha") > -1){
+      plan.notes.push("AHA와 BHA는 같은 날 겹치지 않게 — 주 2~3회 번갈아 쓰는 게 안전합니다.");
+    }
+    if(s.indexOf("vitc") > -1 && (retOn || s.indexOf("bpo") > -1)){
+      plan.notes.push("비타민C는 아침, 레티놀·벤조일퍼옥사이드는 저녁 — 같은 시간대에 겹쳐 바르지 마세요.");
+    }
+    if(retOn || s.indexOf("aha") > -1 || s.indexOf("bha") > -1){
+      plan.notes.push("액티브를 쓴 날은 자외선차단제를 꼭 바르세요. 각질이 일어나면 하루 쉬어 주세요.");
+    }
+    if(s.indexOf("bpo") > -1){
+      plan.notes.push("벤조일퍼옥사이드는 베갯잇·수건·옷에 표백 얼룩을 남길 수 있어요.");
+    }
+    if(s.length >= 6){
+      plan.notes.push("성분을 한 번에 6개 이상 쓰고 있어요. 액티브는 3~4개 이하로 줄이는 편이 안전합니다.");
+    }
+    if(!amIds.length){
+      plan.notes.push("아침에는 액티브 없이 세안 → 수분 → 자외선차단으로 가볍게 가도 충분해요.");
+    }
+    return plan;
+  }
+
+  function renderRoutine(){
+    var p = buildPlan();
+    var html = "";
+
+    html += '<div class="dayblock"><div class="dayhead">AM <span class="tag">아침</span></div>'
+      + (p.amIds.length
+          ? steps(p.amIds, "SPF50+ / PA++++ — 액티브 쓴 날은 필수")
+          : '<p class="empty" style="font-size:12px">세안 → 수분 → 자외선차단제(SPF50+ / PA++++)</p>')
+      + "</div>";
+
+    if(p.cycle){
+      html += '<div class="dayblock"><div class="dayhead">PM <span class="tag">A일 · 각질·트러블 날</span></div>'
+        + steps(p.dayA, null) + "</div>";
+      html += '<div class="dayblock"><div class="dayhead b">PM <span class="tag">B일 · 레티놀 날</span></div>'
+        + steps(p.dayB, null) + "</div>";
+    } else {
+      html += '<div class="dayblock"><div class="dayhead pm">PM <span class="tag">저녁</span></div>'
+        + steps(p.pmIds, null) + "</div>";
+    }
+
+    if(p.notes.length){
+      html += '<div class="notelist">' + p.notes.map(function(t){ return "<p>" + t + "</p>"; }).join("") + "</div>";
+    }
+    routineEl.innerHTML = html;
+  }
+
+  function summaryText(){
+    var s = sortedSel();
+    var pairs = [], worst = "ok", cnt = {red:0,amber:0,green:0,ok:0};
+    for(var i=0;i<s.length;i++) for(var j=i+1;j<s.length;j++){
+      var p = pair(s[i],s[j]); pairs.push(p); cnt[p.lvl]++;
+      if(RANK[p.lvl] > RANK[worst]) worst = p.lvl;
+    }
+    var plan = buildPlan();
+    var d = new Date();
+    var date = d.getFullYear() + "-" + ("0"+(d.getMonth()+1)).slice(-2) + "-" + ("0"+d.getDate()).slice(-2);
+    var lines = [];
+    lines.push("[스킨케어 성분 궁합] " + date);
+    lines.push("선택: " + s.map(function(id){ return MAP[id].n; }).join(", "));
+    lines.push("판정: " + EMOJI[worst] + " " + (worst === "red" ? "충돌 주의" : worst === "amber" ? "조건부 가능" : worst === "green" ? "시너지 추천" : "무난")
+      + " (충돌 " + cnt.red + " · 조건부 " + cnt.amber + " · 시너지 " + cnt.green + ")");
+    pairs.sort(function(a,b){ return RANK[b.lvl]-RANK[a.lvl]; });
+    pairs.slice(0, 6).forEach(function(p){
+      lines.push("· " + MAP[p.a].n + " + " + MAP[p.b].n + " — " + LABEL[p.lvl]);
+    });
+    lines.push("");
+    lines.push("[루틴]");
+    lines.push("AM: " + (plan.amIds.length ? namesOf(plan.amIds) + " → 자외선차단" : "세안 → 수분 → 자외선차단"));
+    if(plan.cycle){
+      lines.push("PM A일(각질·트러블): " + namesOf(plan.dayA));
+      lines.push("PM B일(레티놀): " + namesOf(plan.dayB));
+    } else {
+      lines.push("PM: " + namesOf(plan.pmIds));
+    }
+    if(plan.notes.length){
+      lines.push("");
+      plan.notes.forEach(function(t){ lines.push("· " + t); });
+    }
+    lines.push("");
+    lines.push("@trouble_exit · buzz2026.tistory.com");
+    return lines.join("\n");
+  }
+
+  var toastEl = document.getElementById("toast"), toastTimer = null;
+  function toast(msg){
+    toastEl.textContent = msg;
+    toastEl.classList.add("on");
+    clearTimeout(toastTimer);
+    toastTimer = setTimeout(function(){ toastEl.classList.remove("on"); }, 1900);
+  }
+
+  function fallbackCopy(t){
+    var ta = document.createElement("textarea");
+    ta.value = t;
+    ta.setAttribute("readonly","");
+    ta.style.position = "fixed";
+    ta.style.top = "0";
+    ta.style.left = "0";
+    ta.style.opacity = "0";
+    document.body.appendChild(ta);
+    ta.select();
+    ta.setSelectionRange(0, t.length);
+    var ok = false;
+    try { ok = document.execCommand("copy"); } catch(e) { ok = false; }
+    document.body.removeChild(ta);
+    toast(ok ? "복사했어요 — 붙여넣기 하세요" : "복사가 안 됐어요. 길게 눌러 복사해 주세요");
+  }
+
+  copyBtn.addEventListener("click", function(){
+    if(sel.length < 2) return;
+    var t = summaryText();
+    if(navigator.clipboard && navigator.clipboard.writeText){
+      navigator.clipboard.writeText(t).then(function(){ toast("복사했어요 — 붙여넣기 하세요"); },
+        function(){ fallbackCopy(t); });
+    } else {
+      fallbackCopy(t);
+    }
+  });
+
+  render();
+})();
+</script>
+</body>
+</html>
