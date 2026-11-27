@@ -536,12 +536,12 @@
       var td = 'padding:9px 7px;border:1px solid #E1E7EC;vertical-align:middle;';
       return '<tr' + (isFirst ? ' style="background:#F4FBEA;"' : '') + '>' +
         '<td style="' + td + 'text-align:center;font-weight:800;color:' + (isFirst ? '#3F7A16' : '#4A5A67') + ';">' + o.rank + '</td>' +
-        '<td style="' + td + 'font-weight:700;color:#1B2229;">' + esc(o.name) + '</td>' +
+        '<td style="' + td + 'font-weight:700;color:#1B2229;">' + esc(o.name) +
+          '<span style="display:block;font-size:11px;font-weight:400;color:#7A8794;margin-top:2px;">' + esc(o.seller) + '</span></td>' +
         '<td style="' + td + 'text-align:right;font-weight:800;color:' + (isFirst ? '#3F7A16' : '#1B2229') + ';white-space:nowrap;">' + fmtUnit(o.up) + '원</td>' +
         '<td style="' + td + 'text-align:center;color:#4A5A67;white-space:nowrap;">' + mult + '</td>' +
         '<td style="' + td + 'text-align:right;color:#4A5A67;white-space:nowrap;">' + fmtInt(o.price) + '원</td>' +
         '<td style="' + td + 'text-align:right;color:#4A5A67;white-space:nowrap;">' + fmtVol(o.volume) + 'ml(g)</td>' +
-        '<td style="' + td + 'text-align:center;color:#4A5A67;white-space:nowrap;">' + esc(o.seller) + '</td>' +
       '</tr>';
     }).join("\n");
 
@@ -554,12 +554,11 @@
       'font-family:-apple-system,BlinkMacSystemFont,\'Apple SD Gothic Neo\',\'Malgun Gothic\',sans-serif;">\n' +
       '<thead>\n<tr>\n' +
       '<th style="' + th + '">순위</th>\n' +
-      '<th style="' + th + '">제품</th>\n' +
+      '<th style="' + th + '">제품 · 판매처</th>\n' +
       '<th style="' + th + '">' + unit + '</th>\n' +
       '<th style="' + th + '">1위 대비</th>\n' +
       '<th style="' + th + '">판매가</th>\n' +
       '<th style="' + th + '">용량</th>\n' +
-      '<th style="' + th + '">판매처</th>\n' +
       '</tr></thead>\n<tbody>\n' + trs + '\n</tbody>\n</table>\n</div>\n' +
       '<p style="margin:6px 0 0;font-size:12px;color:#7A8794;line-height:1.6;">※ 같은 용량 기준으로 환산한 값입니다. 가격은 확인 시점 기준이며 판매처·매장에 따라 다를 수 있어요.</p>';
   }
