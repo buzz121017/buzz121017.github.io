@@ -268,6 +268,14 @@
     var map = {"&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;"};
     return String(s).replace(/[&<>"']/g, function(c){ return map[c]; });
   }
+  // 받침 유무에 따라 조사를 고른다 (한글 음절만 판단, 그 외는 기본값)
+  function josa(word, withBatchim, without){
+    var s = String(word == null ? "" : word).replace(/\s+$/, "");
+    if(!s) return without;
+    var c = s.charCodeAt(s.length - 1);
+    if(c < 0xAC00 || c > 0xD7A3) return without;
+    return ((c - 0xAC00) % 28 > 0) ? withBatchim : without;
+  }
 
   /* ---------- 입력 행 ---------- */
   function buildRowEl(r, idx){
@@ -573,7 +581,8 @@
       lines.push("");
       var max = res[res.length - 1].up;
       if(max / min >= 1.05){
-        lines.push("가장 비싼 '" + res[res.length - 1].name + "'는 1위보다 " +
+        var worst = res[res.length - 1].name;
+        lines.push("가장 비싼 '" + worst + "'" + josa(worst, "은", "는") + " 1위보다 " +
           (max / min).toFixed(1) + "배 비싸요.");
       } else {
         lines.push("가장 비싼 제품도 1위와 단가가 같아요.");
