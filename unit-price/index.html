@@ -1,0 +1,695 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=5, viewport-fit=cover">
+<meta name="theme-color" content="#0E1114">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="단가비교">
+<meta name="description" content="가격과 용량만 넣으면 100ml(g)당·10ml(g)당 단가를 계산해 가장 싼 제품부터 순위로 정리합니다. 블로그 비교표와 릴스 캡션도 원클릭 복사.">
+<title>단가 비교 계산기 · TROUBLE LAB</title>
+<link rel="apple-touch-icon" sizes="180x180" href="../apple-touch-icon.png">
+<link rel="icon" type="image/png" sizes="512x512" href="../icon-512.png">
+<meta property="og:type" content="website">
+<meta property="og:site_name" content="TROUBLE LAB">
+<meta property="og:locale" content="ko_KR">
+<meta property="og:url" content="https://buzz121017.github.io/unit-price/">
+<meta property="og:title" content="단가 비교 계산기 · TROUBLE LAB">
+<meta property="og:description" content="가격과 용량만 넣으면 100ml(g)당 단가로 줄 세워 드립니다. 블로그 비교표·릴스 캡션 원클릭 복사.">
+<meta property="og:image" content="https://buzz121017.github.io/og-image.png">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
+<meta property="og:image:alt" content="TROUBLE LAB 단가 비교 계산기">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="단가 비교 계산기 · TROUBLE LAB">
+<meta name="twitter:description" content="가격과 용량만 넣으면 100ml(g)당 단가로 줄 세워 드립니다.">
+<meta name="twitter:image" content="https://buzz121017.github.io/og-image.png">
+<style>
+  :root{
+    --bg:#0E1114; --card:#161B20; --card2:#1A2027; --inset:#12181D; --line:#26313A;
+    --txt:#E9EFF3; --dim:#8A99A6; --mint:#A8F25C; --mint-deep:#5E9E1F; --on-mint:#10230A;
+    --mint-soft:rgba(168,242,92,.10); --mint-line:rgba(168,242,92,.38);
+    --amber:#FFB84D;
+  }
+  *{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+  html,body{margin:0;padding:0;background:var(--bg);color:var(--txt)}
+  body{
+    font-family:-apple-system,BlinkMacSystemFont,"Apple SD Gothic Neo","Pretendard","Malgun Gothic","Noto Sans KR",sans-serif;
+    font-size:15px;line-height:1.5;-webkit-text-size-adjust:100%;overflow-x:hidden;
+  }
+  .wrap{max-width:430px;margin:0 auto;padding:0 16px calc(env(safe-area-inset-bottom) + 44px);overflow-wrap:anywhere;word-break:keep-all}
+  header.top{padding:calc(env(safe-area-inset-top) + 20px) 0 2px}
+  .brand{display:flex;align-items:center;gap:8px;font-size:11px;letter-spacing:.18em;color:var(--mint);font-weight:700}
+  .brand i{display:block;width:16px;height:2px;background:var(--mint);border-radius:2px}
+  h1{font-size:24px;line-height:1.28;margin:9px 0 6px;letter-spacing:-.02em;font-weight:800}
+  h1 em{font-style:normal;color:var(--mint)}
+  .lede{margin:0 0 18px;color:var(--dim);font-size:13px;line-height:1.6}
+
+  .card{background:var(--card);border:1px solid var(--line);border-radius:18px;padding:16px;margin:0 0 12px}
+  .card h2{font-size:14px;margin:0 0 3px;letter-spacing:-.01em;font-weight:800;display:flex;align-items:center;flex-wrap:wrap;gap:6px}
+  .card .cap{font-size:11.5px;color:var(--dim);margin:0 0 12px;line-height:1.55}
+  .step-no{display:inline-flex;align-items:center;justify-content:center;width:19px;height:19px;border-radius:6px;
+    background:var(--mint-soft);color:var(--mint);font-size:11px;font-weight:800;flex:none}
+
+  /* 기준 단위 토글 */
+  .seg{display:flex;gap:4px;background:var(--inset);border:1px solid var(--line);border-radius:14px;padding:4px}
+  .seg button{
+    appearance:none;flex:1 1 0;min-width:0;border:0;background:transparent;color:var(--dim);
+    font:inherit;font-size:13.5px;font-weight:700;letter-spacing:-.01em;padding:11px 4px;border-radius:11px;cursor:pointer;
+    transition:background .15s,color .15s;
+  }
+  .seg button[aria-pressed="true"]{background:var(--mint);color:var(--on-mint)}
+  .hint{font-size:11.5px;color:#7C8B98;margin:9px 0 0;line-height:1.55}
+
+  /* 제품 입력 카드 */
+  .pcard{background:var(--inset);border:1px solid var(--line);border-radius:14px;padding:12px;margin:0 0 10px}
+  .phead{display:flex;align-items:center;justify-content:space-between;gap:8px;margin:0 0 9px}
+  .pnum{font-size:11.5px;font-weight:800;color:var(--mint);letter-spacing:.02em}
+  .del{appearance:none;border:1px solid var(--line);background:transparent;color:var(--dim);
+    font:inherit;font-size:11.5px;padding:5px 9px;border-radius:9px;cursor:pointer}
+  .del:active{background:#1F272E}
+  .fld{display:block;margin:0 0 9px}
+  .fld:last-child{margin-bottom:0}
+  .fld > span{display:block;font-size:11px;color:var(--dim);font-weight:700;margin:0 0 5px;letter-spacing:.01em}
+  .fld input{
+    display:block;width:100%;background:#0E1317;border:1px solid var(--line);border-radius:11px;
+    color:var(--txt);font:inherit;font-size:16px;line-height:1.3;padding:11px 12px;min-height:44px;
+    transition:border-color .15s,box-shadow .15s;
+  }
+  .fld input::placeholder{color:#5C6A76;font-size:14px}
+  .fld input:focus{outline:none;border-color:var(--mint-line);box-shadow:0 0 0 3px rgba(168,242,92,.10)}
+  .frow{display:flex;gap:8px}
+  .frow .fld{flex:1 1 0;min-width:0}
+  .sellers{display:flex;flex-wrap:wrap;gap:6px;margin-top:2px}
+  .sellers button{
+    appearance:none;border:1px solid var(--line);background:#0E1317;color:var(--dim);
+    font:inherit;font-size:12px;font-weight:700;padding:8px 10px;border-radius:9px;cursor:pointer;
+  }
+  .sellers button[aria-pressed="true"]{border-color:var(--mint-line);background:var(--mint-soft);color:var(--mint)}
+
+  .ghost-add{appearance:none;width:100%;border:1px dashed var(--line);background:transparent;color:var(--txt);
+    font:inherit;font-size:13.5px;font-weight:700;padding:12px;border-radius:12px;cursor:pointer}
+  .ghost-add:active{background:#1B2229}
+  .exrow{display:flex;gap:7px;margin-top:9px}
+  .exrow button{appearance:none;flex:1 1 0;min-width:0;border:1px solid var(--line);background:var(--inset);color:var(--dim);
+    font:inherit;font-size:12px;font-weight:700;padding:10px 4px;border-radius:11px;cursor:pointer;line-height:1.3}
+  .exrow button:active{border-color:var(--mint-line);color:var(--mint)}
+  .rowfoot{display:flex;align-items:center;justify-content:space-between;gap:8px;margin:10px 0 0}
+  .count{font-size:11.5px;color:var(--dim)}
+  .count b{color:var(--mint)}
+  .clear{appearance:none;border:0;background:transparent;color:#7C8B98;font:inherit;font-size:11.5px;
+    text-decoration:underline;text-underline-offset:2px;cursor:pointer;padding:4px 0}
+
+  /* 결과 */
+  .stats{display:grid;grid-template-columns:repeat(3,1fr);gap:6px;margin:0 0 12px}
+  .stats div{background:var(--inset);border:1px solid var(--line);border-radius:11px;padding:8px 4px;text-align:center}
+  .stats span{display:block;font-size:10.5px;color:var(--dim);margin-bottom:2px}
+  .stats b{font-size:13px;font-weight:800;letter-spacing:-.01em;white-space:nowrap}
+  .stats div:first-child b{color:var(--mint)}
+
+  .rrow{display:flex;align-items:center;gap:10px;padding:12px 0;border-top:1px dashed rgba(255,255,255,.07)}
+  .rrow:first-child{border-top:0;padding-top:0}
+  .rrow.first{background:var(--mint-soft);border:1px solid var(--mint-line);border-radius:14px;padding:12px;margin:0 0 6px}
+  .rk{flex:none;width:27px;height:27px;border-radius:9px;background:#1F272E;color:var(--dim);
+    display:flex;align-items:center;justify-content:center;font-size:12.5px;font-weight:800}
+  .rrow.first .rk{background:var(--mint);color:var(--on-mint)}
+  .rmain{flex:1 1 auto;min-width:0}
+  .rname{font-size:13.5px;font-weight:800;letter-spacing:-.01em;line-height:1.35;display:flex;flex-wrap:wrap;align-items:center;gap:5px}
+  .badge{display:inline-block;font-size:10px;font-weight:800;color:var(--on-mint);background:var(--mint);
+    border-radius:6px;padding:2px 6px;white-space:nowrap;letter-spacing:0}
+  .rmeta{font-size:11px;color:var(--dim);margin-top:2px;line-height:1.45}
+  .rprice{flex:none;text-align:right;min-width:78px}
+  .rprice b{display:block;font-size:15.5px;font-weight:800;letter-spacing:-.02em;white-space:nowrap}
+  .rrow.first .rprice b{color:var(--mint)}
+  .rprice span{display:block;font-size:10px;color:var(--dim);margin-top:1px;white-space:nowrap}
+  .rprice em{display:block;font-style:normal;font-size:10.5px;color:var(--amber);font-weight:700;margin-top:2px;white-space:nowrap}
+  .empty{color:var(--dim);font-size:13px;line-height:1.65;padding:2px 0 2px}
+  .empty b{color:var(--txt)}
+  .warn{display:flex;gap:7px;align-items:flex-start;font-size:11.5px;color:#B6C3CD;line-height:1.5;
+    background:var(--inset);border:1px solid var(--line);border-radius:11px;padding:9px 11px;margin:10px 0 0}
+  .warn i{flex:none;font-style:normal;color:var(--amber)}
+
+  /* 복사 */
+  .copybtn{appearance:none;width:100%;border:0;border-radius:13px;padding:14px;margin:0 0 8px;
+    background:var(--mint);color:var(--on-mint);font:inherit;font-weight:800;font-size:14px;
+    cursor:pointer;letter-spacing:-.01em}
+  .copybtn:active{opacity:.85}
+  .copybtn.line{background:transparent;border:1px solid var(--mint-line);color:var(--mint);margin-bottom:0}
+  .copybtn:disabled{background:#1F272E;color:#5C6A76;border-color:var(--line);cursor:not-allowed}
+  .copybtn.line:disabled{background:transparent;color:#5C6A76;border-color:var(--line)}
+
+  footer{padding:16px 0 0;margin-top:4px;border-top:1px solid var(--line);color:var(--dim);font-size:11px;line-height:1.75}
+  footer .credit{color:#C6D2DB;font-weight:700;font-size:12px;margin-bottom:3px}
+  footer a{color:var(--mint);text-decoration:none}
+
+  #toast{position:fixed;left:50%;bottom:calc(env(safe-area-inset-bottom) + 24px);transform:translate(-50%,14px);
+    background:#0B1512;color:var(--mint);border:1px solid rgba(168,242,92,.55);padding:11px 18px;border-radius:12px;
+    font-size:13px;font-weight:700;opacity:0;pointer-events:none;transition:opacity .2s,transform .2s;z-index:99;
+    max-width:calc(100% - 32px);text-align:center}
+  #toast.on{opacity:1;transform:translate(-50%,0)}
+  @media (prefers-reduced-motion:reduce){*{transition:none !important}}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header class="top">
+    <div class="brand"><i></i>TROUBLE LAB · 단가 계산기</div>
+    <h1>용량이 다르면,<br><em>단가</em>로 비교합니다</h1>
+    <p class="lede">가격과 용량만 넣으면 같은 기준으로 환산해 가장 싼 제품부터 줄 세워 드려요. 블로그 비교표와 릴스 캡션도 한 번에 복사됩니다.</p>
+  </header>
+
+  <section class="card">
+    <h2><span class="step-no">1</span>기준 단위</h2>
+    <p class="cap">결과와 복사 내용에 함께 반영돼요.</p>
+    <div class="seg" role="group" aria-label="기준 단위">
+      <button type="button" data-basis="100" aria-pressed="true">100ml(g)당</button>
+      <button type="button" data-basis="10" aria-pressed="false">10ml(g)당</button>
+    </div>
+    <p class="hint" id="basisHint">클렌징·토너처럼 용량이 큰 제품은 100ml 기준이, 앰플·세럼처럼 10ml 안팎인 제품은 10ml 기준이 보기 편해요.</p>
+  </section>
+
+  <section class="card">
+    <h2><span class="step-no">2</span>제품 입력</h2>
+    <p class="cap">가격과 용량이 모두 들어간 제품만 순위에 올라가요.</p>
+    <div id="rows"></div>
+    <button type="button" class="ghost-add" id="addBtn">+ 제품 추가</button>
+    <div class="exrow">
+      <button type="button" class="ex" data-ex="cleanser">클렌징 100ml 예시</button>
+      <button type="button" class="ex" data-ex="ampoule">스팟 앰플 10ml 예시</button>
+    </div>
+    <div class="rowfoot">
+      <span class="count" id="count">0개 계산됨</span>
+      <button type="button" class="clear" id="clearBtn">전체 지우기</button>
+    </div>
+  </section>
+
+  <section class="card">
+    <h2><span class="step-no">3</span>단가 순위</h2>
+    <p class="cap" id="resultCap">제품을 2개 이상 넣으면 순위가 나와요.</p>
+    <div id="stats" class="stats" hidden></div>
+    <div id="rank"><p class="empty">아직 입력된 값이 없어요. <b>예시 불러오기</b>로 먼저 확인해 보세요.</p></div>
+  </section>
+
+  <section class="card">
+    <h2><span class="step-no">4</span>블로그·숏폼용 복사</h2>
+    <p class="cap">표는 블로그 HTML 모드에, 요약은 릴스·스레드 캡션에 붙여 넣으세요.</p>
+    <button type="button" class="copybtn" id="copyTable" disabled>블로그용 비교표(HTML) 복사</button>
+    <button type="button" class="copybtn line" id="copyText" disabled>릴스·캡션용 요약 복사</button>
+    <p class="hint">표는 375px 화면에서 잘리지 않도록 가로 스와이프로 감싸서 복사돼요. 예시 가격은 실제 판매가와 다를 수 있습니다.</p>
+  </section>
+
+  <footer>
+    <div class="credit">trouble_exit · buzz2026.tistory.com</div>
+    입력한 내용은 이 브라우저에만 저장되고 어디로도 전송되지 않습니다.<br>
+    가격은 확인 시점 기준이며 판매처·매장에 따라 달라질 수 있어요.
+  </footer>
+</div>
+<div id="toast" role="status" aria-live="polite"></div>
+
+<script>
+(function(){
+  "use strict";
+  var SELLERS = ["다이소","올리브영","약국","기타"];
+  var KEY = "tl_unit_price_v1";
+  var MAXROWS = 10;
+  var uid = 0;
+
+  var state = { basis: 100, rows: [] };
+
+  var rowsEl = document.getElementById("rows");
+  var rankEl = document.getElementById("rank");
+  var statsEl = document.getElementById("stats");
+  var countEl = document.getElementById("count");
+  var capEl = document.getElementById("resultCap");
+  var copyTableBtn = document.getElementById("copyTable");
+  var copyTextBtn = document.getElementById("copyText");
+  var toastEl = document.getElementById("toast");
+  var toastTimer = null;
+
+  function toast(msg){
+    toastEl.textContent = msg;
+    toastEl.classList.add("on");
+    clearTimeout(toastTimer);
+    toastTimer = setTimeout(function(){ toastEl.classList.remove("on"); }, 2200);
+  }
+
+  function makeRow(d){
+    return {
+      id: ++uid,
+      name: (d && d.name) || "",
+      seller: (d && d.seller) || "다이소",
+      price: (d && d.price) || "",
+      volume: (d && d.volume) || ""
+    };
+  }
+
+  function onlyDigits(s){ return String(s == null ? "" : s).replace(/[^\d]/g, ""); }
+  function comma(n){ return Number(n).toLocaleString("ko-KR"); }
+  function num(v){ var n = parseFloat(v); return isFinite(n) ? n : 0; }
+
+  function fmtUnit(v){
+    if(!isFinite(v) || v <= 0) return "-";
+    if(v >= 100) return comma(Math.round(v));
+    var r = Math.round(v * 10) / 10;
+    return (r % 1 === 0) ? String(r) : r.toFixed(1);
+  }
+  function fmtInt(v){
+    if(!isFinite(v)) return "-";
+    return comma(Math.round(v));
+  }
+  function fmtVol(v){
+    if(!isFinite(v) || v <= 0) return "-";
+    return (v % 1 === 0) ? comma(v) : String(Math.round(v * 100) / 100);
+  }
+  function basisLabel(){ return state.basis + "ml(g)당"; }
+  function esc(s){
+    var map = {"&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;"};
+    return String(s).replace(/[&<>"']/g, function(c){ return map[c]; });
+  }
+
+  /* ---------- 입력 행 ---------- */
+  function buildRowEl(r, idx){
+    var el = document.createElement("div");
+    el.className = "pcard";
+    el.dataset.id = r.id;
+
+    var head = document.createElement("div");
+    head.className = "phead";
+    var numEl = document.createElement("span");
+    numEl.className = "pnum";
+    numEl.textContent = "제품 " + (idx + 1);
+    var del = document.createElement("button");
+    del.type = "button";
+    del.className = "del";
+    del.textContent = "삭제";
+    del.setAttribute("aria-label", "제품 " + (idx + 1) + " 삭제");
+    del.addEventListener("click", function(){
+      if(state.rows.length <= 1){
+        state.rows[0].name = ""; state.rows[0].price = ""; state.rows[0].volume = "";
+        renderRows(); update(); save();
+        toast("제품을 최소 1개는 남겨 둘게요");
+        return;
+      }
+      state.rows = state.rows.filter(function(x){ return x.id !== r.id; });
+      renderRows(); update(); save();
+    });
+    head.appendChild(numEl); head.appendChild(del);
+
+    var fName = document.createElement("label");
+    fName.className = "fld";
+    var sName = document.createElement("span");
+    sName.textContent = "제품명";
+    var iName = document.createElement("input");
+    iName.type = "text"; iName.className = "in-name"; iName.maxLength = 40;
+    iName.placeholder = "예: 다이소 어성초 클렌징폼";
+    iName.autocomplete = "off"; iName.enterKeyHint = "next";
+    iName.value = r.name;
+    iName.addEventListener("input", function(){
+      r.name = iName.value; update(); save();
+    });
+    fName.appendChild(sName); fName.appendChild(iName);
+
+    var frow = document.createElement("div");
+    frow.className = "frow";
+
+    var fPrice = document.createElement("label");
+    fPrice.className = "fld";
+    var sPrice = document.createElement("span");
+    sPrice.textContent = "판매가 (원)";
+    var iPrice = document.createElement("input");
+    iPrice.type = "text"; iPrice.className = "in-price"; iPrice.inputMode = "numeric";
+    iPrice.placeholder = "3,000"; iPrice.maxLength = 12; iPrice.autocomplete = "off";
+    iPrice.enterKeyHint = "next";
+    if(r.price) iPrice.value = comma(r.price);
+    iPrice.addEventListener("input", function(){
+      var atEnd = (iPrice.selectionStart === iPrice.value.length);
+      var d = onlyDigits(iPrice.value).slice(0, 9);
+      r.price = d;
+      var shown = d ? comma(d) : "";
+      iPrice.value = shown;
+      if(atEnd){ try{ iPrice.setSelectionRange(shown.length, shown.length); }catch(e){} }
+      update(); save();
+    });
+    fPrice.appendChild(sPrice); fPrice.appendChild(iPrice);
+
+    var fVol = document.createElement("label");
+    fVol.className = "fld";
+    var sVol = document.createElement("span");
+    sVol.textContent = "용량 (ml/g)";
+    var iVol = document.createElement("input");
+    iVol.type = "text"; iVol.className = "in-vol"; iVol.inputMode = "decimal";
+    iVol.placeholder = "150"; iVol.maxLength = 8; iVol.autocomplete = "off";
+    iVol.enterKeyHint = "done";
+    if(r.volume) iVol.value = r.volume;
+    iVol.addEventListener("input", function(){
+      var v = iVol.value.replace(/[^\d.]/g, "");
+      var parts = v.split(".");
+      if(parts.length > 2) v = parts[0] + "." + parts.slice(1).join("");
+      if(v.indexOf(".") > -1) v = v.slice(0, v.indexOf(".") + 3);
+      else v = v.slice(0, 6);
+      if(v !== iVol.value) iVol.value = v;
+      r.volume = v;
+      update(); save();
+    });
+    fVol.appendChild(sVol); fVol.appendChild(iVol);
+
+    frow.appendChild(fPrice); frow.appendChild(fVol);
+
+    var chips = document.createElement("div");
+    chips.className = "sellers";
+    chips.setAttribute("role", "group");
+    chips.setAttribute("aria-label", "판매처");
+    SELLERS.forEach(function(s){
+      var b = document.createElement("button");
+      b.type = "button";
+      b.textContent = s;
+      b.setAttribute("aria-pressed", r.seller === s ? "true" : "false");
+      b.addEventListener("click", function(){
+        r.seller = s;
+        Array.prototype.forEach.call(chips.children, function(c){
+          c.setAttribute("aria-pressed", c === b ? "true" : "false");
+        });
+        update(); save();
+      });
+      chips.appendChild(b);
+    });
+
+    el.appendChild(head);
+    el.appendChild(fName);
+    el.appendChild(frow);
+    el.appendChild(chips);
+    return el;
+  }
+
+  function renderRows(){
+    rowsEl.innerHTML = "";
+    state.rows.forEach(function(r, i){ rowsEl.appendChild(buildRowEl(r, i)); });
+  }
+
+  /* ---------- 계산 ---------- */
+  function compute(){
+    var out = [];
+    state.rows.forEach(function(r, i){
+      var p = num(r.price), v = num(r.volume);
+      if(p > 0 && v > 0){
+        out.push({
+          name: (r.name || "").trim() || ("제품 " + (i + 1)),
+          seller: r.seller || "기타",
+          price: p,
+          volume: v,
+          up: p / v * state.basis
+        });
+      }
+    });
+    out.sort(function(a, b){ return a.up - b.up; });
+    var prev = null, prevRank = 0;
+    out.forEach(function(o, i){
+      if(prev !== null && Math.abs(o.up - prev) / prev < 0.005) o.rank = prevRank;
+      else { o.rank = i + 1; prevRank = i + 1; prev = o.up; }
+    });
+    return out;
+  }
+
+  function renderResults(res){
+    rankEl.innerHTML = "";
+    if(res.length === 0){
+      var p = document.createElement("p");
+      p.className = "empty";
+      p.innerHTML = "아직 순위를 낼 값이 없어요. <b>가격</b>과 <b>용량</b>을 함께 넣어 주세요.";
+      rankEl.appendChild(p);
+      return;
+    }
+    if(res.length === 1){
+      var p2 = document.createElement("p");
+      p2.className = "empty";
+      p2.innerHTML = "1개만 입력돼 있어요. 제품을 <b>2개 이상</b> 넣으면 순위와 배수를 보여 드려요.";
+      rankEl.appendChild(p2);
+    }
+    var min = res[0].up;
+    res.forEach(function(o, i){
+      var row = document.createElement("div");
+      row.className = "rrow" + (o.rank === 1 ? " first" : "");
+
+      var rk = document.createElement("div");
+      rk.className = "rk";
+      rk.textContent = o.rank;
+
+      var main = document.createElement("div");
+      main.className = "rmain";
+      var nm = document.createElement("div");
+      nm.className = "rname";
+      var nmText = document.createElement("span");
+      nmText.textContent = o.name;
+      nm.appendChild(nmText);
+      if(o.rank === 1){
+        var badge = document.createElement("span");
+        badge.className = "badge";
+        badge.textContent = "가성비 1위";
+        nm.appendChild(badge);
+      }
+      var meta = document.createElement("div");
+      meta.className = "rmeta";
+      meta.textContent = o.seller + " · " + fmtVol(o.volume) + "ml(g) · " + fmtInt(o.price) + "원";
+      main.appendChild(nm); main.appendChild(meta);
+
+      var pr = document.createElement("div");
+      pr.className = "rprice";
+      var b = document.createElement("b");
+      b.textContent = fmtUnit(o.up) + "원";
+      var sp = document.createElement("span");
+      sp.textContent = basisLabel();
+      pr.appendChild(b); pr.appendChild(sp);
+      if(o.rank !== 1){
+        var em = document.createElement("em");
+        var mult = o.up / min;
+        em.textContent = mult < 1.05 ? "1위와 동일" : "×" + mult.toFixed(1) + "배";
+        pr.appendChild(em);
+      }
+
+      row.appendChild(rk); row.appendChild(main); row.appendChild(pr);
+      rankEl.appendChild(row);
+    });
+  }
+
+  function renderStats(res){
+    if(res.length < 2){ statsEl.hidden = true; statsEl.innerHTML = ""; return; }
+    var min = res[0].up, max = res[res.length - 1].up;
+    statsEl.hidden = false;
+    statsEl.innerHTML =
+      '<div><span>최저 단가</span><b>' + fmtUnit(min) + '원</b></div>' +
+      '<div><span>최고 단가</span><b>' + fmtUnit(max) + '원</b></div>' +
+      '<div><span>최대 배수</span><b>×' + (max / min).toFixed(1) + '</b></div>';
+  }
+
+  function update(){
+    var res = compute();
+    renderResults(res);
+    renderStats(res);
+    countEl.innerHTML = "<b>" + res.length + "</b>개 계산됨";
+    capEl.textContent = res.length >= 2
+      ? "가격·용량이 입력된 " + res.length + "개를 " + basisLabel() + " 단가가 낮은 순으로 정렬했어요."
+      : "제품을 2개 이상 넣으면 순위가 나와요.";
+    var ok = res.length >= 2;
+    copyTableBtn.disabled = !ok;
+    copyTextBtn.disabled = !ok;
+    return res;
+  }
+
+  /* ---------- 복사 ---------- */
+  function copyTo(text, msg){
+    function fallback(){
+      var ta = document.createElement("textarea");
+      ta.value = text;
+      ta.setAttribute("readonly", "");
+      ta.style.position = "fixed"; ta.style.top = "0"; ta.style.left = "0";
+      ta.style.opacity = "0"; ta.style.fontSize = "16px";
+      document.body.appendChild(ta);
+      ta.select();
+      ta.setSelectionRange(0, text.length);
+      var ok = false;
+      try { ok = document.execCommand("copy"); } catch(e){ ok = false; }
+      document.body.removeChild(ta);
+      toast(ok ? msg : "복사가 안 됐어요. 길게 눌러 복사해 주세요");
+    }
+    if(navigator.clipboard && navigator.clipboard.writeText){
+      navigator.clipboard.writeText(text).then(function(){ toast(msg); }, fallback);
+    } else {
+      fallback();
+    }
+  }
+
+  function tableHTML(res){
+    var unit = basisLabel(), min = res[0].up;
+    var trs = res.map(function(o){
+      var isFirst = o.rank === 1;
+      var mult = isFirst ? "—" : (o.up / min < 1.05 ? "동일" : "×" + (o.up / min).toFixed(1) + "배");
+      var td = 'padding:9px 8px;border:1px solid #E1E7EC;vertical-align:middle;';
+      return '<tr' + (isFirst ? ' style="background:#F4FBEA;"' : '') + '>' +
+        '<td style="' + td + 'text-align:center;font-weight:800;color:' + (isFirst ? '#3F7A16' : '#4A5A67') + ';">' + o.rank + '</td>' +
+        '<td style="' + td + 'font-weight:700;color:#1B2229;">' + esc(o.name) + '</td>' +
+        '<td style="' + td + 'text-align:center;color:#4A5A67;">' + esc(o.seller) + '</td>' +
+        '<td style="' + td + 'text-align:right;color:#4A5A67;white-space:nowrap;">' + fmtInt(o.price) + '원</td>' +
+        '<td style="' + td + 'text-align:right;color:#4A5A67;white-space:nowrap;">' + fmtVol(o.volume) + 'ml(g)</td>' +
+        '<td style="' + td + 'text-align:right;font-weight:800;color:' + (isFirst ? '#3F7A16' : '#1B2229') + ';white-space:nowrap;">' + fmtUnit(o.up) + '원</td>' +
+        '<td style="' + td + 'text-align:center;color:#4A5A67;white-space:nowrap;">' + mult + '</td>' +
+      '</tr>';
+    }).join("\n");
+
+    var th = 'padding:10px 8px;border:1px solid #D8E0E6;background:#EEF3F6;font-weight:800;color:#2A333A;white-space:nowrap;';
+
+    return '<!-- TROUBLE LAB 단가 비교표 -->\n' +
+      '<p style="margin:22px 0 8px;font-size:15px;font-weight:800;color:#1B2229;letter-spacing:-.01em;">🧮 ' + unit + ' 단가 비교</p>\n' +
+      '<div style="overflow-x:auto;-webkit-overflow-scrolling:touch;margin:0 0 8px;border-radius:10px;">\n' +
+      '<table style="width:100%;min-width:560px;border-collapse:collapse;font-size:13.5px;line-height:1.45;color:#20262C;' +
+      'font-family:-apple-system,BlinkMacSystemFont,\'Apple SD Gothic Neo\',\'Malgun Gothic\',sans-serif;">\n' +
+      '<thead>\n<tr>\n' +
+      '<th style="' + th + '">순위</th>\n' +
+      '<th style="' + th + '">제품</th>\n' +
+      '<th style="' + th + '">판매처</th>\n' +
+      '<th style="' + th + '">판매가</th>\n' +
+      '<th style="' + th + '">용량</th>\n' +
+      '<th style="' + th + '">' + unit + '</th>\n' +
+      '<th style="' + th + '">1위 대비</th>\n' +
+      '</tr></thead>\n<tbody>\n' + trs + '\n</tbody>\n</table>\n</div>\n' +
+      '<p style="margin:6px 0 0;font-size:12px;color:#7A8794;line-height:1.6;">※ 같은 용량 기준으로 환산한 값입니다. 가격은 확인 시점 기준이며 판매처·매장에 따라 다를 수 있어요.</p>';
+  }
+
+  function summaryText(res){
+    var unit = basisLabel(), min = res[0].up;
+    var d = new Date();
+    var dateStr = d.getFullYear() + "." + (d.getMonth() + 1) + "." + d.getDate();
+    var lines = [];
+    lines.push("🧮 " + unit + " 단가 비교");
+    lines.push("");
+    res.forEach(function(o){
+      var tail = o.rank === 1 ? " (가성비 1위)" :
+        (o.up / min < 1.05 ? " (1위와 동일)" : " (1위 대비 ×" + (o.up / min).toFixed(1) + "배)");
+      lines.push(o.rank + "위 " + o.name + " · " + o.seller + " " + fmtVol(o.volume) + "ml(g) " +
+        fmtInt(o.price) + "원 → " + unit + " " + fmtUnit(o.up) + "원" + tail);
+    });
+    if(res.length >= 2){
+      lines.push("");
+      var max = res[res.length - 1].up;
+      if(max / min >= 1.05){
+        lines.push("가장 비싼 '" + res[res.length - 1].name + "'는 1위보다 " +
+          (max / min).toFixed(1) + "배 비싸요.");
+      } else {
+        lines.push("가장 비싼 제품도 1위와 단가가 같아요.");
+      }
+    }
+    lines.push("");
+    lines.push("※ 용량을 같은 기준으로 환산한 값이에요. 가격은 " + dateStr + " 확인 기준이고 판매처에 따라 다를 수 있어요.");
+    lines.push("단가 계산기 → buzz121017.github.io/unit-price");
+    return lines.join("\n");
+  }
+
+  /* ---------- 저장/복원 ---------- */
+  function save(){
+    try {
+      localStorage.setItem(KEY, JSON.stringify({
+        basis: state.basis,
+        rows: state.rows.map(function(r){ return {name:r.name, seller:r.seller, price:r.price, volume:r.volume}; })
+      }));
+    } catch(e){}
+  }
+
+  function load(){
+    try {
+      var raw = localStorage.getItem(KEY);
+      if(!raw) return false;
+      var d = JSON.parse(raw);
+      if(!d || !Array.isArray(d.rows) || !d.rows.length) return false;
+      state.basis = (d.basis === 10) ? 10 : 100;
+      state.rows = d.rows.slice(0, MAXROWS).map(makeRow);
+      return true;
+    } catch(e){ return false; }
+  }
+
+  /* ---------- 기준 단위 ---------- */
+  var segBtns = document.querySelectorAll(".seg button");
+  function setBasis(b){
+    state.basis = (b === 10) ? 10 : 100;
+    Array.prototype.forEach.call(segBtns, function(x){
+      x.setAttribute("aria-pressed", Number(x.dataset.basis) === state.basis ? "true" : "false");
+    });
+    save();
+  }
+  Array.prototype.forEach.call(segBtns, function(b){
+    b.addEventListener("click", function(){ setBasis(Number(b.dataset.basis)); update(); });
+  });
+
+  /* ---------- 예시 ---------- */
+  var EXAMPLES = {
+    cleanser: {
+      basis: 100,
+      rows: [
+        { name: "다이소 어성초 클렌징폼", seller: "다이소", price: "3000", volume: "150" },
+        { name: "세라마이드 클렌징폼", seller: "올리브영", price: "12900", volume: "150" },
+        { name: "약국 저자극 클렌징젤", seller: "약국", price: "9900", volume: "200" }
+      ]
+    },
+    ampoule: {
+      basis: 10,
+      rows: [
+        { name: "다이소 티트리 스팟 앰플", seller: "다이소", price: "3000", volume: "10" },
+        { name: "비타민C 브라이트닝 앰플", seller: "올리브영", price: "24000", volume: "30" },
+        { name: "아젤라익 스팟 세럼", seller: "기타", price: "9900", volume: "15" }
+      ]
+    }
+  };
+
+  Array.prototype.forEach.call(document.querySelectorAll(".ex"), function(b){
+    b.addEventListener("click", function(){
+      var ex = EXAMPLES[b.dataset.ex];
+      if(!ex) return;
+      state.rows = ex.rows.map(makeRow);
+      setBasis(ex.basis);
+      renderRows(); update(); save();
+      toast(b.dataset.ex === "ampoule" ? "스팟 앰플 예시를 불러왔어요 (10ml 기준)" : "클렌징 예시를 불러왔어요 (100ml 기준)");
+    });
+  });
+
+  /* ---------- 추가 / 전체 지우기 ---------- */
+  document.getElementById("addBtn").addEventListener("click", function(){
+    if(state.rows.length >= MAXROWS){ toast("제품은 최대 " + MAXROWS + "개까지 넣을 수 있어요"); return; }
+    state.rows.push(makeRow({ seller: "다이소" }));
+    renderRows(); update(); save();
+    var last = rowsEl.lastElementChild;
+    if(last){ last.scrollIntoView({ behavior: "smooth", block: "center" }); }
+    toast("제품을 추가했어요");
+  });
+
+  document.getElementById("clearBtn").addEventListener("click", function(){
+    if(!window.confirm("입력한 제품을 모두 지울까요?")) return;
+    state.rows = [makeRow({ seller: "다이소" }), makeRow({ seller: "다이소" }), makeRow({ seller: "다이소" })];
+    renderRows(); update(); save();
+    toast("입력값을 지웠어요");
+  });
+
+  /* ---------- 복사 버튼 ---------- */
+  copyTableBtn.addEventListener("click", function(){
+    var res = compute();
+    if(res.length < 2) return;
+    copyTo(tableHTML(res), "비교표 HTML을 복사했어요");
+  });
+  copyTextBtn.addEventListener("click", function(){
+    var res = compute();
+    if(res.length < 2) return;
+    copyTo(summaryText(res), "릴스·캡션용 요약을 복사했어요");
+  });
+
+  /* ---------- 시작 ---------- */
+  if(!load()){
+    state.rows = [makeRow({ seller: "다이소" }), makeRow({ seller: "다이소" }), makeRow({ seller: "다이소" })];
+  }
+  Array.prototype.forEach.call(segBtns, function(x){
+    x.setAttribute("aria-pressed", Number(x.dataset.basis) === state.basis ? "true" : "false");
+  });
+  renderRows();
+  update();
+})();
+</script>
+</body>
+</html>
